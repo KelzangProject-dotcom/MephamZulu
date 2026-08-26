@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin Dashboard</title>
+<style>
+  :root {
+    --navy: #2b3245;
+    --bg: #eef0f3;
+    --card-border: #e2e4e9;
+    --text-dark: #1f2430;
+    --blue-link: #1e3fae;
+    --empty-text: #8a8f9c;
+    --danger: #c0392b;
+    --danger-hover: #a5321f;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text-dark);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Header */
+  header.topbar {
+    background: var(--navy);
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    height: 64px;
+    gap: 24px;
+  }
+
+  .logo {
+    background: #2e9e4f;
+    color: #fff;
+    font-weight: 700;
+    font-style: italic;
+    font-size: 20px;
+    padding: 10px 18px;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+
+  .header-title {
+    color: #fff;
+    font-weight: 700;
+    font-size: 16px;
+    flex: 1;
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .header-actions a,
+  .header-actions button {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 14px;
+    background: #3a4155;
+    color: #cfd3dd;
+    border: none;
+    border-radius: 6px;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 14px;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .header-actions a:hover,
+  .header-actions button:hover {
+    background: #4a5169;
+    color: #fff;
+  }
+
+  /* Main content */
+  main {
+    flex: 1;
+    padding: 24px 32px 40px;
+  }
+
+  h1 {
+    font-size: 20px;
+    margin: 0 0 20px;
+  }
+
+  h2 {
+    font-size: 16px;
+    margin: 32px 0 12px;
+  }
+
+  h2:first-of-type {
+    margin-top: 0;
+  }
+
+  .card {
+    background: #fff;
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 2px rgba(20, 25, 40, 0.04);
+  }
+
+  .table-wrap {
+    overflow-x: auto;
+  }
+
+  table {
+    width: 100%;
+    min-width: 640px;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+
+  thead th {
+    text-align: left;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--empty-text);
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--card-border);
+  }
+
+  tbody td {
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--card-border);
+  }
+
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  .empty-row td {
+    color: var(--empty-text);
+    padding: 16px 18px;
+  }
+
+  .card-tag {
+    display: inline-block;
+    background: #e2e0fb;
+    color: #4b3fd1;
+    font-weight: 700;
+    font-size: 12px;
+    padding: 2px 10px;
+    border-radius: 5px;
+  }
+
+  .delete-btn {
+    background: none;
+    border: 1px solid var(--danger);
+    color: var(--danger);
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+  }
+
+  .delete-btn:hover {
+    background: var(--danger);
+    color: #fff;
+  }
+
+  /* Footer */
+  footer {
+    background: var(--navy);
+    color: #b8bcc8;
+    text-align: center;
+    padding: 22px 0;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  footer .copyright { color: #d7dae0; }
+  footer .version { font-size: 13px; color: #8f95a6; }
+
+  @media (max-width: 640px) {
+    main {
+      padding: 16px 16px 32px;
+    }
+
+    header.topbar {
+      flex-wrap: wrap;
+      height: auto;
+      padding: 12px 16px;
+      row-gap: 10px;
+    }
+
+    .header-title {
+      flex-basis: 100%;
+      order: 3;
+    }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="logo">MEPHAM</div>
+  <div class="header-title">Admin Dashboard</div>
+  <div class="header-actions">
+    <a href="shutterfly-board.html">Dashboard</a>
+    <button type="button" id="signOutBtn">Sign out</button>
+  </div>
+</header>
+
+<main>
+  <h1>Admin Dashboard</h1>
+
+  <h2>Board Entries</h2>
+  <div class="card">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Card</th>
+            <th>Tracking ID</th>
+            <th>Page Count</th>
+            <th>Remark</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="boardTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <h2>Time Tracker Entries</h2>
+  <div class="card">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Tracking ID</th>
+            <th>Maya</th>
+            <th>Zulu</th>
+            <th>Builder</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="trackerTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="copyright">© 2026 MagicLabs. All rights reserved.</div>
+  <div class="version">mb-engine · v2.0.10</div>
+</footer>
+
+<script>
+  if (sessionStorage.getItem('sfyRole') !== 'admin') {
+    window.location.href = 'login.html';
+  }
+
+  var BOARD_API_URL = '/.netlify/functions/board';
+  var TRACKER_API_URL = '/.netlify/functions/tracker';
+
+  var CARD_LABELS = {
+    'pos-order': 'Order',
+    'pos-maya': 'Maya',
+    'pos-zulu': 'Zulu',
+    'pos-builder': 'Builder'
+  };
+
+  var boardTableBody = document.getElementById('boardTableBody');
+  var trackerTableBody = document.getElementById('trackerTableBody');
+
+  function loadBoard() {
+    fetch(BOARD_API_URL)
+      .then(function (res) { return res.json(); })
+      .then(renderBoard)
+      .catch(function (err) {
+        console.error('Failed to load board data:', err);
+        boardTableBody.innerHTML = '<tr class="empty-row"><td colspan="5">Failed to load board data.</td></tr>';
+      });
+  }
+
+  function loadTracker() {
+    fetch(TRACKER_API_URL)
+      .then(function (res) { return res.json(); })
+      .then(renderTracker)
+      .catch(function (err) {
+        console.error('Failed to load tracker data:', err);
+        trackerTableBody.innerHTML = '<tr class="empty-row"><td colspan="5">Failed to load tracker data.</td></tr>';
+      });
+  }
+
+  function renderBoard(state) {
+    boardTableBody.innerHTML = '';
+    var hasRows = false;
+
+    Object.keys(CARD_LABELS).forEach(function (posClass) {
+      var rows = state[posClass] || [];
+      rows.forEach(function (row) {
+        hasRows = true;
+        var tr = document.createElement('tr');
+
+        var cardCell = document.createElement('td');
+        var tag = document.createElement('span');
+        tag.className = 'card-tag';
+        tag.textContent = CARD_LABELS[posClass];
+        cardCell.appendChild(tag);
+
+        var trackingCell = document.createElement('td');
+        trackingCell.textContent = row.tracking || '';
+
+        var countCell = document.createElement('td');
+        countCell.textContent = row.count || '';
+
+        var remarkCell = document.createElement('td');
+        remarkCell.textContent = row.remarkChecked ? 'Checked' : '';
+
+        var actionCell = document.createElement('td');
+        var deleteBtn = document.createElement('button');
+        deleteBtn.type = 'button';
+        deleteBtn.className = 'delete-btn';
+        deleteBtn.textContent = 'Delete';
+        deleteBtn.addEventListener('click', function () {
+          deleteBoardRow(posClass, row.rowId);
+        });
+        actionCell.appendChild(deleteBtn);
+
+        tr.appendChild(cardCell);
+        tr.appendChild(trackingCell);
+        tr.appendChild(countCell);
+        tr.appendChild(remarkCell);
+        tr.appendChild(actionCell);
+        boardTableBody.appendChild(tr);
+      });
+    });
+
+    if (!hasRows) {
+      boardTableBody.innerHTML = '<tr class="empty-row"><td colspan="5">-- empty --</td></tr>';
+    }
+  }
+
+  function renderTracker(rows) {
+    trackerTableBody.innerHTML = '';
+
+    if (!rows.length) {
+      trackerTableBody.innerHTML = '<tr class="empty-row"><td colspan="5">-- empty --</td></tr>';
+      return;
+    }
+
+    rows.forEach(function (entry) {
+      var tr = document.createElement('tr');
+
+      [entry.trackingValue, entry.maya, entry.zulu, entry.builder].forEach(function (value) {
+        var td = document.createElement('td');
+        td.textContent = value || '–';
+        tr.appendChild(td);
+      });
+
+      var actionCell = document.createElement('td');
+      var deleteBtn = document.createElement('button');
+      deleteBtn.type = 'button';
+      deleteBtn.className = 'delete-btn';
+      deleteBtn.textContent = 'Delete';
+      deleteBtn.addEventListener('click', function () {
+        deleteTrackerRow(entry.rowId);
+      });
+      actionCell.appendChild(deleteBtn);
+      tr.appendChild(actionCell);
+
+      trackerTableBody.appendChild(tr);
+    });
+  }
+
+  function deleteBoardRow(posClass, rowId) {
+    fetch(BOARD_API_URL)
+      .then(function (res) { return res.json(); })
+      .then(function (state) {
+        state[posClass] = (state[posClass] || []).filter(function (row) {
+          return row.rowId !== rowId;
+        });
+        return fetch(BOARD_API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(state)
+        });
+      })
+      .then(loadBoard)
+      .catch(function (err) {
+        console.error('Failed to delete board row:', err);
+      });
+  }
+
+  function deleteTrackerRow(rowId) {
+    fetch(TRACKER_API_URL)
+      .then(function (res) { return res.json(); })
+      .then(function (rows) {
+        var updated = rows.filter(function (entry) {
+          return entry.rowId !== rowId;
+        });
+        return fetch(TRACKER_API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updated)
+        });
+      })
+      .then(loadTracker)
+      .catch(function (err) {
+        console.error('Failed to delete tracker row:', err);
+      });
+  }
+
+  document.getElementById('signOutBtn').addEventListener('click', function () {
+    sessionStorage.removeItem('sfyLoggedIn');
+    sessionStorage.removeItem('sfyRole');
+    window.location.href = 'login.html';
+  });
+
+  loadBoard();
+  loadTracker();
+</script>
+
+</body>
+</html>

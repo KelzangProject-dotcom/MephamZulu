@@ -203,10 +203,11 @@
 </div>
 
 <script>
-  var CORRECT_PASSWORD = 'mepham@1';
+  var AUTH_API_URL = '/.netlify/functions/auth';
 
   var passwordInput = document.getElementById('password');
   var toggleBtn = document.getElementById('togglePassword');
+  var signInBtn = document.querySelector('.sign-in');
 
   toggleBtn.addEventListener('click', function () {
     var showing = toggleBtn.classList.toggle('showing');
@@ -219,14 +220,27 @@
     var password = document.getElementById('password').value;
     var error = document.getElementById('errorMsg');
 
-    if (password !== CORRECT_PASSWORD) {
-      error.classList.add('visible');
-      return;
-    }
+    signInBtn.disabled = true;
 
-    error.classList.remove('visible');
-    sessionStorage.setItem('sfyLoggedIn', 'true');
-    window.location.href = 'shutterfly-board.html';
+    fetch(AUTH_API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: password })
+    })
+      .then(function (res) {
+        if (!res.ok) throw new Error('Incorrect password');
+        return res.json();
+      })
+      .then(function (data) {
+        error.classList.remove('visible');
+        sessionStorage.setItem('sfyLoggedIn', 'true');
+        sessionStorage.setItem('sfyRole', data.role);
+        window.location.href = data.role === 'admin' ? 'admin-dashboard.html' : 'shutterfly-board.html';
+      })
+      .catch(function () {
+        error.classList.add('visible');
+        signInBtn.disabled = false;
+      });
   });
 </script>
 
