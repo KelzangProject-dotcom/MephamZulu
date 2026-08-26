@@ -984,6 +984,7 @@
     builderCtrl.body.addEventListener('change', function (e) {
       if (!e.target.classList.contains('remark-input') || !e.target.checked) return;
       stopTimer(e.target.dataset.rowId, 'builder');
+      window.open('https://docs.google.com/forms/u/0/d/e/1FAIpQLSc7uibc0bY6ZZvZz-nkzOmIoJZbUFDL9EB_lnt8jFWNBU_zHw/formResponse', '_blank');
     });
   }
 
