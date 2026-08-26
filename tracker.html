@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Time Tracker</title>
 <style>
   :root {
@@ -143,9 +144,14 @@
     font-size: 15px;
   }
 
+  .tracker-table-wrap {
+    overflow-x: auto;
+  }
+
   .tracker-table {
     display: flex;
     flex-direction: column;
+    min-width: 560px;
     border-top: 1px solid var(--card-border);
   }
 
@@ -194,6 +200,48 @@
 
   footer .copyright { color: #d7dae0; }
   footer .version { font-size: 13px; color: #8f95a6; }
+
+  /* Responsive */
+  @media (max-width: 860px) {
+    header.topbar {
+      flex-wrap: wrap;
+      height: auto;
+      padding: 12px 16px;
+      row-gap: 10px;
+    }
+
+    .search-wrap {
+      order: 3;
+      flex-basis: 100%;
+      max-width: none;
+    }
+
+    nav.topnav {
+      flex-wrap: wrap;
+    }
+  }
+
+  @media (max-width: 640px) {
+    main {
+      padding: 16px 16px 32px;
+    }
+
+    .kbd {
+      display: none;
+    }
+  }
+
+  @media (max-width: 420px) {
+    nav.topnav a {
+      padding: 8px 10px;
+      font-size: 14px;
+    }
+
+    .logo {
+      font-size: 17px;
+      padding: 8px 14px;
+    }
+  }
 </style>
 </head>
 <body>
@@ -227,14 +275,16 @@
     <div class="card-header">
       <span class="title">Time Tracker</span>
     </div>
-    <div class="tracker-table">
-      <div class="tracker-row tracker-head">
-        <div class="tracker-cell">Tracking ID</div>
-        <div class="tracker-cell">Maya</div>
-        <div class="tracker-cell">Zulu</div>
-        <div class="tracker-cell">Builder</div>
+    <div class="tracker-table-wrap">
+      <div class="tracker-table">
+        <div class="tracker-row tracker-head">
+          <div class="tracker-cell">Tracking ID</div>
+          <div class="tracker-cell">Maya</div>
+          <div class="tracker-cell">Zulu</div>
+          <div class="tracker-cell">Builder</div>
+        </div>
+        <div class="tracker-body" id="trackerBody"></div>
       </div>
-      <div class="tracker-body" id="trackerBody"></div>
     </div>
   </div>
 </main>
