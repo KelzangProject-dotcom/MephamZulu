@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sign In</title>
+<style>
+  :root {
+    --bg: #eef0f3;
+    --card-border: #e2e4e9;
+    --text-dark: #1f2430;
+    --blue-link: #1e3fae;
+    --blue-btn: #4a7de0;
+    --blue-btn-hover: #3f6cc9;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text-dark);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  .login-wrap {
+    width: 100%;
+    max-width: 420px;
+  }
+
+  .logo {
+    display: block;
+    margin: 0 auto 28px;
+    background: #2e9e4f;
+    color: #fff;
+    font-weight: 700;
+    font-style: italic;
+    font-size: 26px;
+    padding: 18px 40px;
+    border-radius: 6px;
+    letter-spacing: 0.5px;
+    text-align: center;
+    width: fit-content;
+  }
+
+  h1 {
+    text-align: center;
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0 0 24px;
+  }
+
+  .card {
+    background: #fff;
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    padding: 32px;
+    box-shadow: 0 1px 2px rgba(20, 25, 40, 0.04);
+  }
+
+  label {
+    display: block;
+    font-weight: 700;
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+
+  .password-wrap {
+    position: relative;
+    margin-bottom: 20px;
+  }
+
+  input#password {
+    width: 100%;
+    padding: 12px 44px 12px 14px;
+    font-size: 15px;
+    font-family: inherit;
+    color: var(--text-dark);
+    background: #fff;
+    border: 1px solid var(--card-border);
+    border-radius: 6px;
+  }
+
+  input#password:focus {
+    outline: none;
+    border-color: var(--blue-btn);
+    box-shadow: 0 0 0 2px rgba(74, 125, 224, 0.2);
+  }
+
+  .toggle-password {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    background: none;
+    border: none;
+    color: #8a8f9c;
+    cursor: pointer;
+  }
+
+  .toggle-password:hover {
+    color: var(--text-dark);
+  }
+
+  .toggle-password svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .toggle-password .icon-eye-off {
+    display: none;
+  }
+
+  .toggle-password.showing .icon-eye {
+    display: none;
+  }
+
+  .toggle-password.showing .icon-eye-off {
+    display: block;
+  }
+
+  .forgot-link {
+    display: inline-block;
+    color: var(--blue-link);
+    text-decoration: none;
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+
+  .forgot-link:hover {
+    text-decoration: underline;
+  }
+
+  button.sign-in {
+    width: 100%;
+    display: block;
+    background: var(--blue-btn);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 14px 0;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  button.sign-in:hover {
+    background: var(--blue-btn-hover);
+  }
+
+  .error {
+    display: none;
+    color: #c0392b;
+    font-size: 13px;
+    margin: -12px 0 16px;
+  }
+
+  .error.visible {
+    display: block;
+  }
+</style>
+</head>
+<body>
+
+<div class="login-wrap">
+  <div class="logo">MEPHAM</div>
+  <h1>Sign in to your account</h1>
+
+  <div class="card">
+    <form id="loginForm" novalidate>
+      <label for="password">Password*</label>
+      <div class="password-wrap">
+        <input type="password" id="password" name="password" required>
+        <button type="button" class="toggle-password" id="togglePassword" aria-label="Show password">
+          <svg class="icon-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+          <svg class="icon-eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a18.6 18.6 0 0 1 5.06-5.94M9.9 4.24A10.4 10.4 0 0 1 12 5c7 0 11 7 11 7a18.5 18.5 0 0 1-2.16 3.19M14.12 14.12a3 3 0 1 1-4.24-4.24"></path>
+            <line x1="1" y1="1" x2="23" y2="23"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="error" id="errorMsg">Incorrect password.</div>
+
+      <a href="#" class="forgot-link">Forgot your password?</a>
+
+      <button type="submit" class="sign-in">Sign in</button>
+    </form>
+  </div>
+</div>
+
+<script>
+  var CORRECT_PASSWORD = 'mepham@1';
+
+  var passwordInput = document.getElementById('password');
+  var toggleBtn = document.getElementById('togglePassword');
+
+  toggleBtn.addEventListener('click', function () {
+    var showing = toggleBtn.classList.toggle('showing');
+    passwordInput.type = showing ? 'text' : 'password';
+    toggleBtn.setAttribute('aria-label', showing ? 'Hide password' : 'Show password');
+  });
+
+  document.getElementById('loginForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var password = document.getElementById('password').value;
+    var error = document.getElementById('errorMsg');
+
+    if (password !== CORRECT_PASSWORD) {
+      error.classList.add('visible');
+      return;
+    }
+
+    error.classList.remove('visible');
+    sessionStorage.setItem('sfyLoggedIn', 'true');
+    window.location.href = 'shutterfly-board.html';
+  });
+</script>
+
+</body>
+</html>

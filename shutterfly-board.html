@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Standings</title>
+<style>
+  :root {
+    --navy: #2b3245;
+    --navy-dark: #232939;
+    --orange: #ee4d24;
+    --bg: #eef0f3;
+    --card-border: #e2e4e9;
+    --text-dark: #1f2430;
+    --blue-link: #1e3fae;
+    --badge-bg: #e2e0fb;
+    --badge-text: #4b3fd1;
+    --empty-text: #8a8f9c;
+    --selected-bg: #2f5fe0;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text-dark);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Header */
+  header.topbar {
+    background: var(--navy);
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    height: 64px;
+    gap: 24px;
+  }
+
+  .logo {
+    background: #2e9e4f;
+    color: #fff;
+    font-weight: 700;
+    font-style: italic;
+    font-size: 20px;
+    padding: 10px 18px;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+
+  .search-wrap {
+    flex: 1;
+    max-width: 640px;
+    display: flex;
+    align-items: center;
+    background: #3a4155;
+    border-radius: 6px;
+    padding: 8px 14px;
+    color: #b8bcc8;
+    gap: 10px;
+  }
+
+  .search-wrap svg { flex-shrink: 0; opacity: 0.8; }
+
+  .search-wrap span.placeholder {
+    flex: 1;
+    font-size: 14px;
+  }
+
+  .kbd {
+    background: #2b3245;
+    border: 1px solid #4a5169;
+    color: #cfd3dd;
+    font-size: 12px;
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+
+  nav.topnav {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  nav.topnav a {
+    color: #cfd3dd;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 15px;
+    padding: 10px 16px;
+    border-radius: 6px;
+  }
+
+  nav.topnav a.active {
+    background: #3a4155;
+    color: #fff;
+  }
+
+  .profile-menu {
+    position: relative;
+    margin-left: 8px;
+    flex-shrink: 0;
+  }
+
+  .avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #4c5468;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+  }
+
+  .avatar:hover {
+    background: #5a637a;
+  }
+
+  .profile-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    min-width: 160px;
+    background: #fff;
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(20, 25, 40, 0.15);
+    padding: 6px;
+    z-index: 10;
+  }
+
+  .profile-dropdown.open {
+    display: block;
+  }
+
+  .dropdown-item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 10px 12px;
+    background: none;
+    border: none;
+    border-radius: 6px;
+    color: var(--blue-link);
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  .dropdown-item:hover {
+    background: var(--bg);
+  }
+
+  /* Main content */
+  main {
+    flex: 1;
+    padding: 24px 32px 40px;
+  }
+
+  .toolbar {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .toolbar .bulb {
+    color: #3b6df0;
+  }
+
+  .select-fake {
+    background: #fff;
+    border: 1px solid var(--card-border);
+    border-radius: 6px;
+    padding: 10px 16px;
+    font-size: 14px;
+    color: var(--text-dark);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 130px;
+    justify-content: space-between;
+  }
+
+  .select-fake .arrows {
+    color: #9aa0ab;
+    font-size: 11px;
+    line-height: 1;
+  }
+
+  /* Board layout: explicit grid positions */
+  .board {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    align-items: stretch;
+  }
+
+  .pos-order   { grid-column: 1 / -1; grid-row: 1; }
+  .pos-maya    { grid-column: 1; grid-row: 2; }
+  .pos-zulu    { grid-column: 2; grid-row: 2; }
+  .pos-builder { grid-column: 3; grid-row: 2; }
+
+  .card {
+    background: #fff;
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 2px rgba(20, 25, 40, 0.04);
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 18px;
+  }
+
+  .card-header .title {
+    color: var(--blue-link);
+    font-weight: 600;
+    font-size: 15px;
+  }
+
+  .card-body {
+    border-top: 1px solid var(--card-border);
+    padding: 14px 18px;
+    font-size: 14px;
+    color: var(--empty-text);
+  }
+
+  .card-body.selected {
+    background: var(--selected-bg);
+    color: #fff;
+  }
+
+  .card-body--columns {
+    display: flex;
+    padding: 0;
+  }
+
+  .card-body--columns .col {
+    flex: 1 1 33.33%;
+    padding: 12px 18px;
+  }
+
+  .card-body--columns-2 .col {
+    flex: 1 1 50%;
+  }
+
+  .card-body--columns .col:not(:last-child) {
+    border-right: 1px solid var(--card-border);
+  }
+
+  .card-body--columns .col-label {
+    font-size: 13px;
+    color: var(--empty-text);
+  }
+
+  .card-body--columns.selected .col-label {
+    color: #fff;
+  }
+
+  .card-body--columns.selected .col:not(:last-child) {
+    border-right-color: rgba(255, 255, 255, 0.3);
+  }
+
+  .col-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  .col-input {
+    width: 100%;
+    padding: 6px 8px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--text-dark);
+    background: #fff;
+    border: 1px solid var(--card-border);
+    border-radius: 5px;
+  }
+
+  .col-input:focus {
+    outline: none;
+    border-color: var(--selected-bg);
+    box-shadow: 0 0 0 2px rgba(47, 95, 224, 0.2);
+  }
+
+  .card-body--columns.selected .col-input {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.4);
+    color: #fff;
+  }
+
+  .card-body--columns.selected .col-input::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  .remark-row {
+    display: flex;
+    align-items: center;
+    height: 32px;
+    gap: 8px;
+    cursor: pointer;
+  }
+
+  .remark-input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--selected-bg);
+    cursor: pointer;
+  }
+
+  .remark-emoji {
+    font-size: 16px;
+    line-height: 1;
+  }
+
+  .add-row-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    border: none;
+    border-top: 1px solid var(--card-border);
+    background: #fff;
+    color: var(--selected-bg);
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1;
+    padding: 8px 0;
+    cursor: pointer;
+  }
+
+  .add-row-btn:hover {
+    background: #f3f5fb;
+  }
+
+  .card-total-row {
+    display: flex;
+    border-top: 1px solid var(--card-border);
+  }
+
+  .card-total-row .col {
+    flex: 1 1 33.33%;
+    padding: 10px 18px;
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--text-dark);
+  }
+
+  .card-total-row--2col .col {
+    flex: 1 1 50%;
+  }
+
+  .card-total-row .col:not(:last-child) {
+    border-right: 1px solid var(--card-border);
+  }
+
+  .card-total-row.selected {
+    background: var(--selected-bg);
+    border-top-color: rgba(255, 255, 255, 0.3);
+  }
+
+  .card-total-row.selected .col {
+    color: #fff;
+  }
+
+  .card-total-row.selected .col:not(:last-child) {
+    border-right-color: rgba(255, 255, 255, 0.3);
+  }
+
+  /* Footer */
+  footer {
+    background: var(--navy);
+    color: #b8bcc8;
+    text-align: center;
+    padding: 22px 0;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  footer .copyright { color: #d7dae0; }
+  footer .version { font-size: 13px; color: #8f95a6; }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="logo">MEPHAM</div>
+
+  <div class="search-wrap">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="11" cy="11" r="7"></circle>
+      <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+    </svg>
+    <span class="placeholder">Search</span>
+    <span class="kbd">CTRL + K</span>
+  </div>
+
+  <nav class="topnav">
+    <a href="#" class="active">Standings</a>
+    <a href="#">Orders</a>
+    <a href="#">Search</a>
+    <a href="tracker.html">Time Tracker</a>
+  </nav>
+
+  <div class="profile-menu">
+    <button type="button" class="avatar" id="avatarBtn" aria-haspopup="true" aria-expanded="false">T</button>
+    <div class="profile-dropdown" id="profileDropdown">
+      <button type="button" class="dropdown-item" id="logoutBtn">Sign out</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="toolbar">
+    <svg class="bulb" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M9 18h6"></path>
+      <path d="M10 22h4"></path>
+      <path d="M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"></path>
+    </svg>
+    <div class="select-fake"><span>styles</span><span class="arrows">▲▼</span></div>
+    <div class="select-fake"><span>identifiers</span><span class="arrows">▲▼</span></div>
+  </div>
+
+  <div class="board">
+    <div class="card pos-order">
+      <div class="card-header">
+        <span class="title">Order</span>
+      </div>
+      <div class="card-body card-body--columns card-body--columns-2">
+        <div class="col">
+          <div class="col-label">Tracking ID</div>
+          <div class="col-rows">
+            <input type="text" class="col-input" data-field="tracking" value="0">
+          </div>
+        </div>
+        <div class="col">
+          <div class="col-label">Page Count</div>
+          <div class="col-rows">
+            <input type="text" class="col-input" data-field="count" value="0">
+          </div>
+        </div>
+      </div>
+      <button type="button" class="add-row-btn">+</button>
+      <div class="card-total-row card-total-row--2col">
+        <div class="col total-value">0</div>
+        <div class="col total-value">0</div>
+      </div>
+    </div>
+
+    <div class="card pos-maya">
+      <div class="card-header">
+        <span class="title">Maya</span>
+      </div>
+      <div class="card-body card-body--columns">
+        <div class="col">
+          <div class="col-label">Tracking ID</div>
+          <div class="col-rows">
+            <input type="text" class="col-input" data-field="tracking" value="0">
+          </div>
+        </div>
+        <div class="col">
+          <div class="col-label">Page Count</div>
+          <div class="col-rows">
+            <input type="text" class="col-input" data-field="count" value="0">
+          </div>
+        </div>
+        <div class="col">
+          <div class="col-label">Remark</div>
+          <div class="col-rows">
+            <label class="remark-row">
+              <input type="checkbox" class="remark-input">
+              <span class="remark-emoji"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+      <button type="button" class="add-row-btn">+</button>
+      <div class="card-total-row">
+        <div class="col total-value">0</div>
+        <div class="col total-value">0</div>
+        <div class="col total-value">0</div>
+      </div>
+    </div>
+
+    <div class="card pos-zulu">
+      <div class="card-header">
+        <span class="title">Zulu</span>
+      </div>
+      <div class="card-body card-body--columns">
+        <div class="col">
+          <div class="col-label">Tracking ID</div>
+          <div class="col-rows">
+            <input type="text" class="col-input" data-field="tracking" value="0">
+          </div>
+        </div>
+        <div class="col">
+          <div class="col-label">Page Count</div>
+          <div class="col-rows">
+            <input type="text" class="col-input" data-field="count" value="0">
+          </div>
+        </div>
+        <div class="col">
+          <div class="col-label">Remark</div>
+          <div class="col-rows">
+            <label class="remark-row">
+              <input type="checkbox" class="remark-input">
+              <span class="remark-emoji"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+      <button type="button" class="add-row-btn">+</button>
+      <div class="card-total-row">
+        <div class="col total-value">0</div>
+        <div class="col total-value">0</div>
+        <div class="col total-value">0</div>
+      </div>
+    </div>
+
+    <div class="card pos-builder">
+      <div class="card-header">
+        <span class="title">Builder</span>
+      </div>
+      <div class="card-body card-body--columns">
+        <div class="col">
+          <div class="col-label">Tracking ID</div>
+          <div class="col-rows">
+            <input type="text" class="col-input" data-field="tracking" value="0">
+          </div>
+        </div>
+        <div class="col">
+          <div class="col-label">Page Count</div>
+          <div class="col-rows">
+            <input type="text" class="col-input" data-field="count" value="0">
+          </div>
+        </div>
+        <div class="col">
+          <div class="col-label">Remark</div>
+          <div class="col-rows">
+            <label class="remark-row">
+              <input type="checkbox" class="remark-input">
+              <span class="remark-emoji"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+      <button type="button" class="add-row-btn">+</button>
+      <div class="card-total-row">
+        <div class="col total-value">0</div>
+        <div class="col total-value">0</div>
+        <div class="col total-value">0</div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="copyright">© 2026 MagicLabs. All rights reserved.</div>
+  <div class="version">mb-engine · v2.0.10</div>
+</footer>
+
+<script>
+  var CORRECT_EMOJI = '✅';
+
+  var rowIdCounter = 0;
+  function generateRowId() {
+    rowIdCounter += 1;
+    return 'row-' + rowIdCounter;
+  }
+
+  var TRACKER_STORAGE_KEY = 'sfy-time-tracker-rows';
+  var TRACKER_API_URL = '/.netlify/functions/tracker';
+  var timerRows = new Map();
+  var persistTrackerRowsTimer = null;
+
+  function formatDuration(ms) {
+    var totalSeconds = Math.max(0, Math.round(ms / 1000));
+    var m = Math.floor(totalSeconds / 60);
+    var s = totalSeconds % 60;
+    return m > 0 ? (m + 'm ' + s + 's') : (s + 's');
+  }
+
+  function persistTrackerRows() {
+    var data = [];
+    timerRows.forEach(function (entry, rowId) {
+      data.push({
+        rowId: rowId,
+        trackingValue: entry.trackingValue,
+        maya: entry.maya,
+        zulu: entry.zulu,
+        builder: entry.builder
+      });
+    });
+    localStorage.setItem(TRACKER_STORAGE_KEY, JSON.stringify(data));
+
+    clearTimeout(persistTrackerRowsTimer);
+    persistTrackerRowsTimer = setTimeout(function () {
+      fetch(TRACKER_API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      }).catch(function (err) {
+        console.error('Failed to save tracker rows to Turso:', err);
+      });
+    }, 400);
+  }
+
+  function createTrackerRow(rowId, trackingValue) {
+    timerRows.set(rowId, {
+      trackingValue: trackingValue,
+      maya: null,
+      zulu: null,
+      builder: null
+    });
+    persistTrackerRows();
+  }
+
+  function updateTrackerValue(rowId, trackingValue) {
+    var entry = timerRows.get(rowId);
+    if (!entry) return;
+    entry.trackingValue = trackingValue;
+    persistTrackerRows();
+  }
+
+  function startTimer(rowId, stageKey) {
+    var entry = timerRows.get(rowId);
+    if (!entry) return;
+    entry[stageKey + 'Start'] = Date.now();
+  }
+
+  function stopTimer(rowId, stageKey) {
+    var entry = timerRows.get(rowId);
+    if (!entry || !entry[stageKey + 'Start']) return;
+    var elapsed = Date.now() - entry[stageKey + 'Start'];
+    entry[stageKey] = formatDuration(elapsed);
+    persistTrackerRows();
+  }
+
+  function makeRemarkRow(rowId) {
+    var label = document.createElement('label');
+    label.className = 'remark-row';
+
+    var checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.className = 'remark-input';
+    checkbox.dataset.rowId = rowId;
+
+    var emoji = document.createElement('span');
+    emoji.className = 'remark-emoji';
+
+    label.appendChild(checkbox);
+    label.appendChild(emoji);
+    return label;
+  }
+
+  function setupCard(card) {
+    var body = card.querySelector('.card-body--columns');
+    var rowGroups = body.querySelectorAll('.col-rows');
+    var trackingRows = rowGroups[0];
+    var countRows = rowGroups[1];
+    var remarkRows = rowGroups[2];
+    var addBtn = card.querySelector('.add-row-btn');
+    var totalCells = card.querySelectorAll('.card-total-row .total-value');
+
+    Array.prototype.forEach.call(trackingRows.children, function (input, i) {
+      if (!input.dataset.rowId) input.dataset.rowId = generateRowId();
+      var countInput = countRows.children[i];
+      if (countInput) countInput.dataset.rowId = input.dataset.rowId;
+      var remarkLabel = remarkRows ? remarkRows.children[i] : null;
+      if (remarkLabel) {
+        var checkbox = remarkLabel.querySelector('.remark-input');
+        if (checkbox) checkbox.dataset.rowId = input.dataset.rowId;
+      }
+    });
+
+    function recompute() {
+      var trackingInputs = trackingRows.querySelectorAll('input');
+      var countInputs = countRows.querySelectorAll('input');
+
+      var trackingCount = 0;
+      trackingInputs.forEach(function (input) {
+        if (input.value.trim() !== '') trackingCount++;
+      });
+
+      var countSum = 0;
+      countInputs.forEach(function (input) {
+        var value = parseInt(input.value, 10);
+        if (!isNaN(value)) countSum += value;
+      });
+
+      totalCells[0].textContent = trackingCount;
+      totalCells[1].textContent = countSum;
+
+      if (remarkRows && totalCells[2]) {
+        var remarkCount = 0;
+        remarkRows.querySelectorAll('input').forEach(function (input) {
+          if (input.checked) remarkCount++;
+        });
+        totalCells[2].textContent = remarkCount;
+      }
+    }
+
+    function addRow(trackingValue, countValue, rowId) {
+      var rowIdProvided = !!rowId;
+      rowId = rowId || generateRowId();
+
+      var trackingInput = document.createElement('input');
+      trackingInput.type = 'text';
+      trackingInput.className = 'col-input';
+      trackingInput.dataset.field = 'tracking';
+      trackingInput.dataset.rowId = rowId;
+      trackingInput.value = trackingValue === undefined ? '0' : trackingValue;
+      if (rowIdProvided) trackingInput.dataset.claimed = 'true';
+      trackingRows.appendChild(trackingInput);
+
+      var countInput = document.createElement('input');
+      countInput.type = 'text';
+      countInput.className = 'col-input';
+      countInput.dataset.field = 'count';
+      countInput.dataset.rowId = rowId;
+      countInput.value = countValue === undefined ? '0' : countValue;
+      countRows.appendChild(countInput);
+
+      if (remarkRows) remarkRows.appendChild(makeRemarkRow(rowId));
+
+      recompute();
+      return trackingInput;
+    }
+
+    body.addEventListener('input', function (e) {
+      if (e.target.classList.contains('remark-input')) {
+        var emoji = e.target.nextElementSibling;
+        emoji.textContent = e.target.checked ? CORRECT_EMOJI : '';
+      }
+      if (e.target.dataset.field === 'tracking' && e.target.value.trim() !== '') {
+        e.target.dataset.claimed = 'true';
+      }
+      recompute();
+    });
+
+    addBtn.addEventListener('click', function () {
+      addRow('0', '0').focus();
+    });
+
+    return {
+      card: card,
+      body: body,
+      trackingRows: trackingRows,
+      countRows: countRows,
+      remarkRows: remarkRows,
+      addBtn: addBtn,
+      recompute: recompute,
+      addRow: addRow
+    };
+  }
+
+  var controllers = [];
+  document.querySelectorAll('.card').forEach(function (card) {
+    if (!card.querySelector('.card-body--columns')) return;
+    controllers.push(setupCard(card));
+  });
+
+  function findReusableRow(ctrl) {
+    var trackingInput = Array.prototype.find.call(ctrl.trackingRows.children, function (input) {
+      return input.dataset.claimed !== 'true';
+    });
+    if (!trackingInput) return null;
+    var index = Array.prototype.indexOf.call(ctrl.trackingRows.children, trackingInput);
+    return { trackingInput: trackingInput, index: index };
+  }
+
+  function claimRow(ctrl, trackingValue, countValue, rowId) {
+    var reusable = findReusableRow(ctrl);
+    var trackingInput;
+
+    if (reusable) {
+      trackingInput = reusable.trackingInput;
+      var countInput = ctrl.countRows.children[reusable.index];
+
+      trackingInput.dataset.rowId = rowId;
+      trackingInput.value = trackingValue;
+      trackingInput.dataset.claimed = 'true';
+
+      if (countInput) {
+        countInput.dataset.rowId = rowId;
+        countInput.value = countValue;
+      }
+
+      if (ctrl.remarkRows) {
+        var remarkLabel = ctrl.remarkRows.children[reusable.index];
+        var checkbox = remarkLabel ? remarkLabel.querySelector('.remark-input') : null;
+        if (checkbox) checkbox.dataset.rowId = rowId;
+      }
+
+      ctrl.recompute();
+    } else {
+      trackingInput = ctrl.addRow(trackingValue, countValue, rowId);
+    }
+
+    trackingInput.dispatchEvent(new Event('input', { bubbles: true }));
+    return trackingInput;
+  }
+
+  var orderCtrl = controllers.find(function (c) { return c.card.classList.contains('pos-order'); });
+  var mayaCtrl = controllers.find(function (c) { return c.card.classList.contains('pos-maya'); });
+  var zuluCtrl = controllers.find(function (c) { return c.card.classList.contains('pos-zulu'); });
+  var builderCtrl = controllers.find(function (c) { return c.card.classList.contains('pos-builder'); });
+
+  if (orderCtrl && mayaCtrl) {
+    orderCtrl.trackingRows.addEventListener('input', function (e) {
+      var input = e.target;
+      if (!input.classList.contains('col-input')) return;
+
+      var rowId = input.dataset.rowId;
+      if (!rowId || input.dataset.mayaLinked || input.value.trim() === '') return;
+
+      input.dataset.mayaLinked = 'true';
+      var index = Array.prototype.indexOf.call(orderCtrl.trackingRows.children, input);
+      var countInput = orderCtrl.countRows.children[index];
+      claimRow(mayaCtrl, input.value.trim(), countInput ? countInput.value : '0', rowId);
+    });
+
+    orderCtrl.body.addEventListener('input', function (e) {
+      var input = e.target;
+      if (!input.classList.contains('col-input')) return;
+
+      var rowId = input.dataset.rowId;
+      if (!rowId) return;
+
+      var targetGroup = input.dataset.field === 'tracking' ? mayaCtrl.trackingRows : mayaCtrl.countRows;
+      var targetInput = Array.prototype.find.call(targetGroup.children, function (el) {
+        return el.dataset.rowId === rowId;
+      });
+      if (!targetInput || targetInput.value === input.value) return;
+
+      targetInput.value = input.value;
+      targetInput.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+  }
+
+  if (mayaCtrl) {
+    mayaCtrl.trackingRows.addEventListener('input', function (e) {
+      var input = e.target;
+      if (!input.classList.contains('col-input')) return;
+      var rowId = input.dataset.rowId;
+      if (!rowId) return;
+
+      if (!timerRows.has(rowId)) {
+        if (input.value.trim() === '') return;
+        createTrackerRow(rowId, input.value.trim());
+        startTimer(rowId, 'maya');
+      } else {
+        updateTrackerValue(rowId, input.value.trim() || '—');
+      }
+    });
+  }
+
+  function wireMoveOnCheck(fromCtrl, toCtrl, fromStage, toStage) {
+    if (!fromCtrl || !toCtrl) return;
+
+    fromCtrl.body.addEventListener('change', function (e) {
+      if (!e.target.classList.contains('remark-input') || !e.target.checked) return;
+
+      var rowId = e.target.dataset.rowId;
+      var remarkLabel = e.target.closest('.remark-row');
+      var index = Array.prototype.indexOf.call(fromCtrl.remarkRows.children, remarkLabel);
+      var trackingInput = fromCtrl.trackingRows.children[index];
+      var countInput = fromCtrl.countRows.children[index];
+      var trackingValue = trackingInput ? trackingInput.value : '0';
+      var countValue = countInput ? countInput.value : '0';
+
+      stopTimer(rowId, fromStage);
+
+      claimRow(toCtrl, trackingValue, countValue, rowId);
+
+      startTimer(rowId, toStage);
+
+      if (trackingInput) trackingInput.remove();
+      if (countInput) countInput.remove();
+      remarkLabel.remove();
+
+      fromCtrl.recompute();
+    });
+  }
+
+  wireMoveOnCheck(mayaCtrl, zuluCtrl, 'maya', 'zulu');
+  wireMoveOnCheck(zuluCtrl, builderCtrl, 'zulu', 'builder');
+
+  if (builderCtrl) {
+    builderCtrl.body.addEventListener('change', function (e) {
+      if (!e.target.classList.contains('remark-input') || !e.target.checked) return;
+      stopTimer(e.target.dataset.rowId, 'builder');
+    });
+  }
+
+  var BOARD_STORAGE_KEY = 'sfy-board-state';
+  var BOARD_API_URL = '/.netlify/functions/board';
+  var saveBoardStateTimer = null;
+
+  function posClassOf(card) {
+    return Array.prototype.find.call(card.classList, function (c) {
+      return c.indexOf('pos-') === 0;
+    });
+  }
+
+  function buildBoardState() {
+    var state = {};
+    controllers.forEach(function (ctrl) {
+      var rows = [];
+      Array.prototype.forEach.call(ctrl.trackingRows.children, function (trackingInput, i) {
+        var countInput = ctrl.countRows.children[i];
+        var remarkLabel = ctrl.remarkRows ? ctrl.remarkRows.children[i] : null;
+        var checkbox = remarkLabel ? remarkLabel.querySelector('.remark-input') : null;
+        rows.push({
+          rowId: trackingInput.dataset.rowId,
+          tracking: trackingInput.value,
+          count: countInput ? countInput.value : '0',
+          remarkChecked: checkbox ? checkbox.checked : false,
+          mayaLinked: trackingInput.dataset.mayaLinked === 'true',
+          claimed: trackingInput.dataset.claimed === 'true'
+        });
+      });
+      state[posClassOf(ctrl.card)] = rows;
+    });
+    return state;
+  }
+
+  function saveBoardState() {
+    var state = buildBoardState();
+    localStorage.setItem(BOARD_STORAGE_KEY, JSON.stringify(state));
+
+    clearTimeout(saveBoardStateTimer);
+    saveBoardStateTimer = setTimeout(function () {
+      fetch(BOARD_API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(state)
+      }).catch(function (err) {
+        console.error('Failed to save board state to Turso:', err);
+      });
+    }, 400);
+  }
+
+  function applyBoardState(state) {
+    if (!state) return;
+
+    controllers.forEach(function (ctrl) {
+      var rows = state[posClassOf(ctrl.card)];
+      if (!rows) return;
+
+      ctrl.trackingRows.innerHTML = '';
+      ctrl.countRows.innerHTML = '';
+      if (ctrl.remarkRows) ctrl.remarkRows.innerHTML = '';
+
+      rows.forEach(function (r) {
+        var trackingInput = ctrl.addRow(r.tracking, r.count, r.rowId);
+        if (r.mayaLinked) trackingInput.dataset.mayaLinked = 'true';
+        if (r.claimed) {
+          trackingInput.dataset.claimed = 'true';
+        } else {
+          delete trackingInput.dataset.claimed;
+        }
+
+        if (ctrl.remarkRows && r.remarkChecked) {
+          var checkbox = ctrl.remarkRows.lastElementChild.querySelector('.remark-input');
+          checkbox.checked = true;
+          checkbox.nextElementSibling.textContent = CORRECT_EMOJI;
+        }
+      });
+
+      ctrl.recompute();
+    });
+  }
+
+  function restoreBoardState() {
+    fetch(BOARD_API_URL)
+      .then(function (res) {
+        if (!res.ok) throw new Error('Bad response: ' + res.status);
+        return res.json();
+      })
+      .then(function (state) {
+        if (state && Object.keys(state).length) {
+          applyBoardState(state);
+        } else {
+          applyBoardState(readLocalBoardState());
+        }
+      })
+      .catch(function (err) {
+        console.error('Failed to load board state from Turso, using local cache:', err);
+        applyBoardState(readLocalBoardState());
+      });
+  }
+
+  function readLocalBoardState() {
+    var raw = localStorage.getItem(BOARD_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  }
+
+  restoreBoardState();
+
+  document.body.addEventListener('input', saveBoardState);
+  document.body.addEventListener('change', saveBoardState);
+  document.body.addEventListener('click', function (e) {
+    if (e.target.classList.contains('add-row-btn')) saveBoardState();
+  });
+
+  var avatarBtn = document.getElementById('avatarBtn');
+  var profileDropdown = document.getElementById('profileDropdown');
+
+  avatarBtn.addEventListener('click', function (e) {
+    e.stopPropagation();
+    var open = profileDropdown.classList.toggle('open');
+    avatarBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+
+  document.addEventListener('click', function (e) {
+    if (!profileDropdown.contains(e.target) && e.target !== avatarBtn) {
+      profileDropdown.classList.remove('open');
+      avatarBtn.setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  document.getElementById('logoutBtn').addEventListener('click', function () {
+    sessionStorage.removeItem('sfyLoggedIn');
+    window.location.href = 'login.html';
+  });
+</script>
+
+</body>
+</html>
