@@ -370,6 +370,26 @@
     color: #fff;
   }
 
+  .col-input.row-highlight-grey,
+  .remark-row.row-highlight-grey {
+    background-color: #e2e4e9;
+  }
+
+  .col-input.row-highlight-yellow,
+  .remark-row.row-highlight-yellow {
+    background-color: #fdeb9e;
+  }
+
+  .col-input.row-highlight-green,
+  .remark-row.row-highlight-green {
+    background-color: #b6ecc7;
+  }
+
+  .col-input.row-highlight-red,
+  .remark-row.row-highlight-red {
+    background-color: #f5b7ae;
+  }
+
   .add-row-btn {
     display: flex;
     align-items: center;
@@ -558,7 +578,7 @@
       <div class="card-header">
         <span class="title">Order</span>
       </div>
-      <div class="card-body card-body--columns card-body--columns-2">
+      <div class="card-body card-body--columns">
         <div class="col">
           <div class="col-label">Tracking ID</div>
           <div class="col-rows">
@@ -571,9 +591,22 @@
             <input type="text" class="col-input" data-field="count" value="0">
           </div>
         </div>
+        <div class="col">
+          <div class="col-label">Remark</div>
+          <div class="col-rows">
+            <div class="remark-row">
+              <label class="remark-check">
+                <input type="checkbox" class="remark-input">
+                <span class="remark-emoji"></span>
+              </label>
+              <button type="button" class="row-delete-btn" aria-label="Delete row">&times;</button>
+            </div>
+          </div>
+        </div>
       </div>
       <button type="button" class="add-row-btn">+</button>
-      <div class="card-total-row card-total-row--2col">
+      <div class="card-total-row">
+        <div class="col total-value">0</div>
         <div class="col total-value">0</div>
         <div class="col total-value">0</div>
       </div>
@@ -951,7 +984,39 @@
     return { trackingInput: trackingInput, index: index };
   }
 
-  function claimRow(ctrl, trackingValue, countValue, rowId) {
+  var HIGHLIGHT_CLASSES = ['row-highlight-grey', 'row-highlight-yellow', 'row-highlight-green', 'row-highlight-red'];
+
+  function highlightRow(ctrl, rowId, highlightClass) {
+    var trackingInput = Array.prototype.find.call(ctrl.trackingRows.children, function (el) {
+      return el.dataset.rowId === rowId;
+    });
+    var countInput = Array.prototype.find.call(ctrl.countRows.children, function (el) {
+      return el.dataset.rowId === rowId;
+    });
+    var remarkRow = null;
+    if (ctrl.remarkRows) {
+      remarkRow = Array.prototype.find.call(ctrl.remarkRows.children, function (el) {
+        var checkbox = el.querySelector('.remark-input');
+        return checkbox && checkbox.dataset.rowId === rowId;
+      });
+    }
+
+    [trackingInput, countInput, remarkRow].forEach(function (el) {
+      if (!el) return;
+      HIGHLIGHT_CLASSES.forEach(function (c) { el.classList.remove(c); });
+      if (highlightClass) el.classList.add(highlightClass);
+    });
+
+    if (trackingInput) {
+      if (highlightClass) {
+        trackingInput.dataset.highlight = highlightClass;
+      } else {
+        delete trackingInput.dataset.highlight;
+      }
+    }
+  }
+
+  function claimRow(ctrl, trackingValue, countValue, rowId, highlightClass) {
     var reusable = findReusableRow(ctrl);
     var trackingInput;
 
@@ -979,6 +1044,8 @@
       trackingInput = ctrl.addRow(trackingValue, countValue, rowId);
     }
 
+    if (highlightClass) highlightRow(ctrl, rowId, highlightClass);
+
     trackingInput.dispatchEvent(new Event('input', { bubbles: true }));
     return trackingInput;
   }
@@ -999,7 +1066,7 @@
       input.dataset.mayaLinked = 'true';
       var index = Array.prototype.indexOf.call(orderCtrl.trackingRows.children, input);
       var countInput = orderCtrl.countRows.children[index];
-      claimRow(mayaCtrl, input.value.trim(), countInput ? countInput.value : '0', rowId);
+      claimRow(mayaCtrl, input.value.trim(), countInput ? countInput.value : '0', rowId, 'row-highlight-grey');
     });
 
     orderCtrl.body.addEventListener('input', function (e) {
@@ -1037,7 +1104,7 @@
     });
   }
 
-  function wireMoveOnCheck(fromCtrl, toCtrl, fromStage, toStage) {
+  function wireMoveOnCheck(fromCtrl, toCtrl, fromStage, toStage, toHighlight) {
     if (!fromCtrl || !toCtrl) return;
 
     fromCtrl.body.addEventListener('change', function (e) {
@@ -1053,7 +1120,7 @@
 
       stopTimer(rowId, fromStage);
 
-      claimRow(toCtrl, trackingValue, countValue, rowId);
+      claimRow(toCtrl, trackingValue, countValue, rowId, toHighlight);
 
       startTimer(rowId, toStage);
 
@@ -1065,13 +1132,14 @@
     });
   }
 
-  wireMoveOnCheck(mayaCtrl, zuluCtrl, 'maya', 'zulu');
-  wireMoveOnCheck(zuluCtrl, builderCtrl, 'zulu', 'builder');
+  wireMoveOnCheck(mayaCtrl, zuluCtrl, 'maya', 'zulu', 'row-highlight-yellow');
+  wireMoveOnCheck(zuluCtrl, builderCtrl, 'zulu', 'builder', 'row-highlight-green');
 
   if (builderCtrl) {
     builderCtrl.body.addEventListener('change', function (e) {
       if (!e.target.classList.contains('remark-input') || !e.target.checked) return;
       stopTimer(e.target.dataset.rowId, 'builder');
+      highlightRow(builderCtrl, e.target.dataset.rowId, 'row-highlight-red');
       window.open('https://docs.google.com/forms/u/0/d/e/1FAIpQLSc7uibc0bY6ZZvZz-nkzOmIoJZbUFDL9EB_lnt8jFWNBU_zHw/formResponse', '_blank');
     });
   }
@@ -1100,7 +1168,8 @@
           count: countInput ? countInput.value : '0',
           remarkChecked: checkbox ? checkbox.checked : false,
           mayaLinked: trackingInput.dataset.mayaLinked === 'true',
-          claimed: trackingInput.dataset.claimed === 'true'
+          claimed: trackingInput.dataset.claimed === 'true',
+          highlight: trackingInput.dataset.highlight || null
         });
       });
       state[posClassOf(ctrl.card)] = rows;
@@ -1149,6 +1218,8 @@
           checkbox.checked = true;
           checkbox.nextElementSibling.textContent = CORRECT_EMOJI;
         }
+
+        if (r.highlight) highlightRow(ctrl, r.rowId, r.highlight);
       });
 
       ctrl.recompute();
