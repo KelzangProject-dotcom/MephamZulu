@@ -1058,6 +1058,27 @@
   var zuluCtrl = controllers.find(function (c) { return c.card.classList.contains('pos-zulu'); });
   var builderCtrl = controllers.find(function (c) { return c.card.classList.contains('pos-builder'); });
 
+  if (orderCtrl && mayaCtrl && window.ResizeObserver) {
+    var rowTwoCards = [mayaCtrl, zuluCtrl, builderCtrl]
+      .filter(Boolean)
+      .map(function (c) { return c.card; });
+
+    var syncOrderHeight = function () {
+      if (!window.matchMedia('(min-width: 901px)').matches) {
+        orderCtrl.card.style.minHeight = '';
+        return;
+      }
+      var maxHeight = Math.max.apply(Math, rowTwoCards.map(function (card) {
+        return card.offsetHeight;
+      }));
+      orderCtrl.card.style.minHeight = maxHeight + 'px';
+    };
+
+    var orderHeightObserver = new ResizeObserver(syncOrderHeight);
+    rowTwoCards.forEach(function (card) { orderHeightObserver.observe(card); });
+    window.addEventListener('resize', syncOrderHeight);
+  }
+
   if (orderCtrl && mayaCtrl) {
     orderCtrl.trackingRows.addEventListener('input', function (e) {
       var input = e.target;
