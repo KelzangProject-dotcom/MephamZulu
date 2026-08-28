@@ -1044,7 +1044,10 @@
       trackingInput = ctrl.addRow(trackingValue, countValue, rowId);
     }
 
-    if (highlightClass) highlightRow(ctrl, rowId, highlightClass);
+    if (highlightClass) {
+      highlightRow(ctrl, rowId, highlightClass);
+      if (orderCtrl && ctrl !== orderCtrl) highlightRow(orderCtrl, rowId, highlightClass);
+    }
 
     trackingInput.dispatchEvent(new Event('input', { bubbles: true }));
     return trackingInput;
@@ -1140,6 +1143,7 @@
       if (!e.target.classList.contains('remark-input') || !e.target.checked) return;
       stopTimer(e.target.dataset.rowId, 'builder');
       highlightRow(builderCtrl, e.target.dataset.rowId, 'row-highlight-red');
+      if (orderCtrl) highlightRow(orderCtrl, e.target.dataset.rowId, 'row-highlight-red');
       window.open('https://docs.google.com/forms/u/0/d/e/1FAIpQLSc7uibc0bY6ZZvZz-nkzOmIoJZbUFDL9EB_lnt8jFWNBU_zHw/formResponse', '_blank');
     });
   }
