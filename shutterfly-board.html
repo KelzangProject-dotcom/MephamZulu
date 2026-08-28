@@ -315,7 +315,14 @@
   .remark-row {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     height: 32px;
+    gap: 8px;
+  }
+
+  .remark-check {
+    display: flex;
+    align-items: center;
     gap: 8px;
     cursor: pointer;
   }
@@ -330,6 +337,37 @@
   .remark-emoji {
     font-size: 16px;
     line-height: 1;
+  }
+
+  .row-delete-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    background: none;
+    border: none;
+    border-radius: 5px;
+    color: var(--empty-text);
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .row-delete-btn:hover {
+    background: #fbe4e1;
+    color: var(--danger, #c0392b);
+  }
+
+  .card-body--columns.selected .row-delete-btn {
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  .card-body--columns.selected .row-delete-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
   }
 
   .add-row-btn {
@@ -561,10 +599,13 @@
         <div class="col">
           <div class="col-label">Remark</div>
           <div class="col-rows">
-            <label class="remark-row">
-              <input type="checkbox" class="remark-input">
-              <span class="remark-emoji"></span>
-            </label>
+            <div class="remark-row">
+              <label class="remark-check">
+                <input type="checkbox" class="remark-input">
+                <span class="remark-emoji"></span>
+              </label>
+              <button type="button" class="row-delete-btn" aria-label="Delete row">&times;</button>
+            </div>
           </div>
         </div>
       </div>
@@ -596,10 +637,13 @@
         <div class="col">
           <div class="col-label">Remark</div>
           <div class="col-rows">
-            <label class="remark-row">
-              <input type="checkbox" class="remark-input">
-              <span class="remark-emoji"></span>
-            </label>
+            <div class="remark-row">
+              <label class="remark-check">
+                <input type="checkbox" class="remark-input">
+                <span class="remark-emoji"></span>
+              </label>
+              <button type="button" class="row-delete-btn" aria-label="Delete row">&times;</button>
+            </div>
           </div>
         </div>
       </div>
@@ -631,10 +675,13 @@
         <div class="col">
           <div class="col-label">Remark</div>
           <div class="col-rows">
-            <label class="remark-row">
-              <input type="checkbox" class="remark-input">
-              <span class="remark-emoji"></span>
-            </label>
+            <div class="remark-row">
+              <label class="remark-check">
+                <input type="checkbox" class="remark-input">
+                <span class="remark-emoji"></span>
+              </label>
+              <button type="button" class="row-delete-btn" aria-label="Delete row">&times;</button>
+            </div>
           </div>
         </div>
       </div>
@@ -731,8 +778,11 @@
   }
 
   function makeRemarkRow(rowId) {
-    var label = document.createElement('label');
-    label.className = 'remark-row';
+    var row = document.createElement('div');
+    row.className = 'remark-row';
+
+    var check = document.createElement('label');
+    check.className = 'remark-check';
 
     var checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
@@ -742,9 +792,18 @@
     var emoji = document.createElement('span');
     emoji.className = 'remark-emoji';
 
-    label.appendChild(checkbox);
-    label.appendChild(emoji);
-    return label;
+    check.appendChild(checkbox);
+    check.appendChild(emoji);
+
+    var deleteBtn = document.createElement('button');
+    deleteBtn.type = 'button';
+    deleteBtn.className = 'row-delete-btn';
+    deleteBtn.setAttribute('aria-label', 'Delete row');
+    deleteBtn.innerHTML = '&times;';
+
+    row.appendChild(check);
+    row.appendChild(deleteBtn);
+    return row;
   }
 
   function setupCard(card) {
@@ -852,6 +911,35 @@
   document.querySelectorAll('.card').forEach(function (card) {
     if (!card.querySelector('.card-body--columns')) return;
     controllers.push(setupCard(card));
+  });
+
+  document.body.addEventListener('click', function (e) {
+    if (!e.target.classList.contains('row-delete-btn')) return;
+
+    var card = e.target.closest('.card');
+    var ctrl = controllers.find(function (c) { return c.card === card; });
+    if (!ctrl) return;
+
+    var remarkRow = e.target.closest('.remark-row');
+    var index = Array.prototype.indexOf.call(ctrl.remarkRows.children, remarkRow);
+    var checkbox = remarkRow.querySelector('.remark-input');
+    var rowId = checkbox ? checkbox.dataset.rowId : null;
+
+    var trackingInput = ctrl.trackingRows.children[index];
+    var countInput = ctrl.countRows.children[index];
+
+    if (trackingInput) trackingInput.remove();
+    if (countInput) countInput.remove();
+    remarkRow.remove();
+
+    ctrl.recompute();
+
+    if (rowId && timerRows.has(rowId)) {
+      timerRows.delete(rowId);
+      persistTrackerRows();
+    }
+
+    saveBoardState();
   });
 
   function findReusableRow(ctrl) {
