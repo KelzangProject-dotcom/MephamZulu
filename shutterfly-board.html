@@ -747,11 +747,15 @@
   var timerRows = new Map();
   var persistTrackerRowsTimer = null;
 
-  function formatDuration(ms) {
-    var totalSeconds = Math.max(0, Math.round(ms / 1000));
-    var m = Math.floor(totalSeconds / 60);
-    var s = totalSeconds % 60;
-    return m > 0 ? (m + 'm ' + s + 's') : (s + 's');
+  function formatClockTime(ts) {
+    var d = new Date(ts);
+    var hours = d.getHours();
+    var minutes = d.getMinutes();
+    var ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    if (hours === 0) hours = 12;
+    var minutesStr = minutes < 10 ? '0' + minutes : '' + minutes;
+    return hours + ':' + minutesStr + ' ' + ampm;
   }
 
   function persistTrackerRows() {
@@ -799,14 +803,7 @@
   function startTimer(rowId, stageKey) {
     var entry = timerRows.get(rowId);
     if (!entry) return;
-    entry[stageKey + 'Start'] = Date.now();
-  }
-
-  function stopTimer(rowId, stageKey) {
-    var entry = timerRows.get(rowId);
-    if (!entry || !entry[stageKey + 'Start']) return;
-    var elapsed = Date.now() - entry[stageKey + 'Start'];
-    entry[stageKey] = formatDuration(elapsed);
+    entry[stageKey] = formatClockTime(Date.now());
     persistTrackerRows();
   }
 
@@ -1128,7 +1125,7 @@
     });
   }
 
-  function wireMoveOnCheck(fromCtrl, toCtrl, fromStage, toStage, toHighlight) {
+  function wireMoveOnCheck(fromCtrl, toCtrl, toStage, toHighlight) {
     if (!fromCtrl || !toCtrl) return;
 
     fromCtrl.body.addEventListener('change', function (e) {
@@ -1142,8 +1139,6 @@
       var trackingValue = trackingInput ? trackingInput.value : '0';
       var countValue = countInput ? countInput.value : '0';
 
-      stopTimer(rowId, fromStage);
-
       claimRow(toCtrl, trackingValue, countValue, rowId, toHighlight);
 
       startTimer(rowId, toStage);
@@ -1156,13 +1151,12 @@
     });
   }
 
-  wireMoveOnCheck(mayaCtrl, zuluCtrl, 'maya', 'zulu', 'row-highlight-yellow');
-  wireMoveOnCheck(zuluCtrl, builderCtrl, 'zulu', 'builder', 'row-highlight-green');
+  wireMoveOnCheck(mayaCtrl, zuluCtrl, 'zulu', 'row-highlight-yellow');
+  wireMoveOnCheck(zuluCtrl, builderCtrl, 'builder', 'row-highlight-green');
 
   if (builderCtrl) {
     builderCtrl.body.addEventListener('change', function (e) {
       if (!e.target.classList.contains('remark-input') || !e.target.checked) return;
-      stopTimer(e.target.dataset.rowId, 'builder');
       highlightRow(builderCtrl, e.target.dataset.rowId, 'row-highlight-red');
       if (orderCtrl) highlightRow(orderCtrl, e.target.dataset.rowId, 'row-highlight-red');
       window.open('https://docs.google.com/forms/u/0/d/e/1FAIpQLSc7uibc0bY6ZZvZz-nkzOmIoJZbUFDL9EB_lnt8jFWNBU_zHw/formResponse', '_blank');
