@@ -391,6 +391,11 @@
     background-color: #f5b7ae;
   }
 
+  .col-input.row-highlight-blue,
+  .remark-row.row-highlight-blue {
+    background-color: #b7d4f5;
+  }
+
   .add-row-btn {
     display: flex;
     align-items: center;
@@ -1006,7 +1011,7 @@
     return { trackingInput: trackingInput, index: index };
   }
 
-  var HIGHLIGHT_CLASSES = ['row-highlight-grey', 'row-highlight-yellow', 'row-highlight-green', 'row-highlight-red'];
+  var HIGHLIGHT_CLASSES = ['row-highlight-grey', 'row-highlight-yellow', 'row-highlight-green', 'row-highlight-red', 'row-highlight-blue'];
 
   function highlightRow(ctrl, rowId, highlightClass) {
     var trackingInput = Array.prototype.find.call(ctrl.trackingRows.children, function (el) {
@@ -1179,7 +1184,32 @@
 
   wireMoveOnCheck(mayaCtrl, zuluCtrl, 'zulu', 'row-highlight-yellow');
   wireMoveOnCheck(zuluCtrl, builderCtrl, 'builder', 'row-highlight-green');
-  wireMoveOnCheck(orderCtrl, doneOrderCtrl, 'doneOrder', null);
+  wireMoveOnCheck(orderCtrl, doneOrderCtrl, 'doneOrder', 'row-highlight-blue');
+
+  function removeRowById(ctrl, rowId) {
+    if (!ctrl || !rowId) return;
+    var trackingInput = Array.prototype.find.call(ctrl.trackingRows.children, function (el) {
+      return el.dataset.rowId === rowId;
+    });
+    if (!trackingInput) return;
+
+    var index = Array.prototype.indexOf.call(ctrl.trackingRows.children, trackingInput);
+    var countInput = ctrl.countRows.children[index];
+    var remarkRow = ctrl.remarkRows ? ctrl.remarkRows.children[index] : null;
+
+    trackingInput.remove();
+    if (countInput) countInput.remove();
+    if (remarkRow) remarkRow.remove();
+
+    ctrl.recompute();
+  }
+
+  if (orderCtrl && builderCtrl) {
+    orderCtrl.body.addEventListener('change', function (e) {
+      if (!e.target.classList.contains('remark-input') || !e.target.checked) return;
+      removeRowById(builderCtrl, e.target.dataset.rowId);
+    });
+  }
 
   if (builderCtrl) {
     builderCtrl.body.addEventListener('change', function (e) {
