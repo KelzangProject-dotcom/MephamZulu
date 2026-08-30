@@ -209,10 +209,11 @@
     align-items: stretch;
   }
 
-  .pos-order   { grid-column: 1; grid-row: 1; }
-  .pos-maya    { grid-column: 1; grid-row: 2; }
-  .pos-zulu    { grid-column: 2; grid-row: 2; }
-  .pos-builder { grid-column: 3; grid-row: 2; }
+  .pos-order     { grid-column: 1; grid-row: 1; }
+  .pos-doneorder { grid-column: 2; grid-row: 1; }
+  .pos-maya      { grid-column: 1; grid-row: 2; }
+  .pos-zulu      { grid-column: 2; grid-row: 2; }
+  .pos-builder   { grid-column: 3; grid-row: 2; }
 
   .card {
     background: #fff;
@@ -463,10 +464,11 @@
       grid-template-columns: 1fr;
     }
 
-    .pos-order   { grid-column: 1; grid-row: 1; }
-    .pos-maya    { grid-column: 1; grid-row: 2; }
-    .pos-zulu    { grid-column: 1; grid-row: 3; }
-    .pos-builder { grid-column: 1; grid-row: 4; }
+    .pos-order     { grid-column: 1; grid-row: 1; }
+    .pos-doneorder { grid-column: 1; grid-row: 2; }
+    .pos-maya      { grid-column: 1; grid-row: 3; }
+    .pos-zulu      { grid-column: 1; grid-row: 4; }
+    .pos-builder   { grid-column: 1; grid-row: 5; }
   }
 
   @media (max-width: 860px) {
@@ -607,6 +609,29 @@
       <button type="button" class="add-row-btn">+</button>
       <div class="card-total-row">
         <div class="col total-value">0</div>
+        <div class="col total-value">0</div>
+        <div class="col total-value">0</div>
+      </div>
+    </div>
+
+    <div class="card pos-doneorder">
+      <div class="card-header">
+        <span class="title">Done Order</span>
+      </div>
+      <div class="card-body card-body--columns card-body--columns-2">
+        <div class="col">
+          <div class="col-label">Tracking ID</div>
+          <div class="col-rows">
+          </div>
+        </div>
+        <div class="col">
+          <div class="col-label">Page Count</div>
+          <div class="col-rows">
+          </div>
+        </div>
+      </div>
+      <button type="button" class="add-row-btn">+</button>
+      <div class="card-total-row">
         <div class="col total-value">0</div>
         <div class="col total-value">0</div>
       </div>
@@ -1051,6 +1076,7 @@
   }
 
   var orderCtrl = controllers.find(function (c) { return c.card.classList.contains('pos-order'); });
+  var doneOrderCtrl = controllers.find(function (c) { return c.card.classList.contains('pos-doneorder'); });
   var mayaCtrl = controllers.find(function (c) { return c.card.classList.contains('pos-maya'); });
   var zuluCtrl = controllers.find(function (c) { return c.card.classList.contains('pos-zulu'); });
   var builderCtrl = controllers.find(function (c) { return c.card.classList.contains('pos-builder'); });
@@ -1153,6 +1179,7 @@
 
   wireMoveOnCheck(mayaCtrl, zuluCtrl, 'zulu', 'row-highlight-yellow');
   wireMoveOnCheck(zuluCtrl, builderCtrl, 'builder', 'row-highlight-green');
+  wireMoveOnCheck(orderCtrl, doneOrderCtrl, 'doneOrder', null);
 
   if (builderCtrl) {
     builderCtrl.body.addEventListener('change', function (e) {
