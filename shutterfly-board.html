@@ -340,7 +340,8 @@
     line-height: 1;
   }
 
-  .row-delete-btn {
+  .row-delete-btn,
+  .clear-all-btn {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -357,9 +358,14 @@
     flex-shrink: 0;
   }
 
-  .row-delete-btn:hover {
+  .row-delete-btn:hover,
+  .clear-all-btn:hover {
     background: #fbe4e1;
     color: var(--danger, #c0392b);
+  }
+
+  .clear-all-btn {
+    margin-left: auto;
   }
 
   .card-body--columns.selected .row-delete-btn {
@@ -622,6 +628,7 @@
     <div class="card pos-doneorder">
       <div class="card-header">
         <span class="title">Done Order</span>
+        <button type="button" class="clear-all-btn" aria-label="Clear all Done Order rows">&times;</button>
       </div>
       <div class="card-body card-body--columns card-body--columns-2">
         <div class="col">
@@ -999,6 +1006,29 @@
       persistTrackerRows();
     }
 
+    saveBoardState();
+  });
+
+  document.body.addEventListener('click', function (e) {
+    if (!e.target.classList.contains('clear-all-btn')) return;
+
+    var card = e.target.closest('.card');
+    var ctrl = controllers.find(function (c) { return c.card === card; });
+    if (!ctrl) return;
+
+    Array.prototype.forEach.call(ctrl.trackingRows.children, function (input) {
+      var rowId = input.dataset.rowId;
+      if (rowId && timerRows.has(rowId)) {
+        timerRows.delete(rowId);
+      }
+    });
+    persistTrackerRows();
+
+    ctrl.trackingRows.innerHTML = '';
+    ctrl.countRows.innerHTML = '';
+    if (ctrl.remarkRows) ctrl.remarkRows.innerHTML = '';
+
+    ctrl.recompute();
     saveBoardState();
   });
 
