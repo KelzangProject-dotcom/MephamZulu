@@ -1290,18 +1290,7 @@
   }
 
   if (orderCtrl && mayaCtrl) {
-    orderCtrl.trackingRows.addEventListener('input', function (e) {
-      var input = e.target;
-      if (!input.classList.contains('col-input')) return;
-
-      var rowId = input.dataset.rowId;
-      if (!rowId || input.dataset.mayaLinked || input.value.trim() === '') return;
-
-      input.dataset.mayaLinked = 'true';
-      var index = Array.prototype.indexOf.call(orderCtrl.trackingRows.children, input);
-      var countInput = orderCtrl.countRows.children[index];
-      claimRow(mayaCtrl, input.value.trim(), countInput ? countInput.value : '0', rowId, 'row-highlight-grey');
-    });
+    var orderMirrorTargets = [mayaCtrl, zuluCtrl, builderCtrl].filter(Boolean);
 
     orderCtrl.body.addEventListener('input', function (e) {
       var input = e.target;
@@ -1310,14 +1299,29 @@
       var rowId = input.dataset.rowId;
       if (!rowId) return;
 
-      var targetGroup = input.dataset.field === 'tracking' ? mayaCtrl.trackingRows : mayaCtrl.countRows;
-      var targetInput = Array.prototype.find.call(targetGroup.children, function (el) {
+      var trackingInput = Array.prototype.find.call(orderCtrl.trackingRows.children, function (el) {
         return el.dataset.rowId === rowId;
       });
-      if (!targetInput || targetInput.value === input.value) return;
+      var countInput = Array.prototype.find.call(orderCtrl.countRows.children, function (el) {
+        return el.dataset.rowId === rowId;
+      });
 
-      targetInput.value = input.value;
-      targetInput.dispatchEvent(new Event('input', { bubbles: true }));
+      if (trackingInput && !trackingInput.dataset.mayaLinked && trackingInput.value.trim() !== '') {
+        trackingInput.dataset.mayaLinked = 'true';
+        claimRow(mayaCtrl, trackingInput.value.trim(), countInput ? countInput.value : '0', rowId, 'row-highlight-grey');
+        return;
+      }
+
+      orderMirrorTargets.forEach(function (ctrl) {
+        var targetGroup = input.dataset.field === 'tracking' ? ctrl.trackingRows : ctrl.countRows;
+        var targetInput = Array.prototype.find.call(targetGroup.children, function (el) {
+          return el.dataset.rowId === rowId;
+        });
+        if (!targetInput || targetInput.value === input.value) return;
+
+        targetInput.value = input.value;
+        targetInput.dispatchEvent(new Event('input', { bubbles: true }));
+      });
     });
   }
 
