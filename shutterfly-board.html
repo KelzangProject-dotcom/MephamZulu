@@ -932,7 +932,7 @@
   }
 
   var TRACKER_STORAGE_KEY = 'sfy-time-tracker-rows';
-  var TRACKER_API_URL = '/.netlify/functions/tracker';
+  var TRACKER_API_URL = '/api/tracker';
   var timerRows = new Map();
   var persistTrackerRowsTimer = null;
 
@@ -1407,7 +1407,7 @@
   }
 
   var BOARD_STORAGE_KEY = 'sfy-board-state';
-  var BOARD_API_URL = '/.netlify/functions/board';
+  var BOARD_API_URL = '/api/board';
   var saveBoardStateTimer = null;
 
   function posClassOf(card) {
@@ -1723,6 +1723,9 @@
     chartScroll.hidden = !showingTable;
   });
 </script>
+
+<script>window.si=window.si||function(){(window.siq=window.siq||[]).push(arguments)};</script>
+<script defer src="/_vercel/speed-insights/script.js"></script>
 
 </body>
 </html>
