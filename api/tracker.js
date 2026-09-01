@@ -1,4 +1,4 @@
-import { getClient, jsonResponse } from './_shared.js';
+import { getClient } from './_shared.js';
 
 async function ensureTable(client) {
   await client.execute(`
@@ -9,21 +9,26 @@ async function ensureTable(client) {
   `);
 }
 
-export async function GET() {
+export default async function handler(req, res) {
   const client = getClient();
   await ensureTable(client);
-  const result = await client.execute('SELECT data FROM tracker_state WHERE id = 1');
-  const data = result.rows.length ? result.rows[0].data : '[]';
-  return jsonResponse(200, JSON.parse(data));
-}
 
-export async function POST(request) {
-  const client = getClient();
-  await ensureTable(client);
-  const data = (await request.text()) || '[]';
-  await client.execute({
-    sql: 'INSERT INTO tracker_state (id, data) VALUES (1, ?) ON CONFLICT(id) DO UPDATE SET data = excluded.data',
-    args: [data]
-  });
-  return jsonResponse(200, { ok: true });
+  if (req.method === 'GET') {
+    const result = await client.execute('SELECT data FROM tracker_state WHERE id = 1');
+    const data = result.rows.length ? result.rows[0].data : '[]';
+    return res.status(200).json(JSON.parse(data));
+  }
+
+  if (req.method === 'POST') {
+    const data = req.body == null
+      ? '[]'
+      : (typeof req.body === 'string' ? req.body : JSON.stringify(req.body));
+    await client.execute({
+      sql: 'INSERT INTO tracker_state (id, data) VALUES (1, ?) ON CONFLICT(id) DO UPDATE SET data = excluded.data',
+      args: [data]
+    });
+    return res.status(200).json({ ok: true });
+  }
+
+  return res.status(405).json({ error: 'Method Not Allowed' });
 }
