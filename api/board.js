@@ -1,34 +1,27 @@
-import { getClient } from './_shared.js';
-
-async function ensureTable(client) {
-  await client.execute(`
-    CREATE TABLE IF NOT EXISTS board_state (
-      id INTEGER PRIMARY KEY CHECK (id = 1),
-      data TEXT NOT NULL
-    )
-  `);
-}
-
+// TEMPORARY DIAGNOSTIC - restore real handler after debugging
 export default async function handler(req, res) {
-  const client = getClient();
-  await ensureTable(client);
-
-  if (req.method === 'GET') {
-    const result = await client.execute('SELECT data FROM board_state WHERE id = 1');
-    const data = result.rows.length ? result.rows[0].data : '{}';
-    return res.status(200).json(JSON.parse(data));
-  }
-
-  if (req.method === 'POST') {
-    const data = req.body == null
-      ? '{}'
-      : (typeof req.body === 'string' ? req.body : JSON.stringify(req.body));
-    await client.execute({
-      sql: 'INSERT INTO board_state (id, data) VALUES (1, ?) ON CONFLICT(id) DO UPDATE SET data = excluded.data',
-      args: [data]
+  const diag = {
+    node: process.version,
+    hasUrl: !!process.env.TURSO_DATABASE_URL,
+    hasToken: !!process.env.TURSO_AUTH_TOKEN,
+    urlScheme: (process.env.TURSO_DATABASE_URL || '').split(':')[0] || null
+  };
+  try {
+    const mod = await import('@libsql/client/web');
+    diag.imported = true;
+    const client = mod.createClient({
+      url: process.env.TURSO_DATABASE_URL,
+      authToken: process.env.TURSO_AUTH_TOKEN
     });
-    return res.status(200).json({ ok: true });
+    diag.clientCreated = true;
+    const r = await client.execute('SELECT 1 AS one');
+    diag.query = r.rows;
+    diag.ok = true;
+  } catch (e) {
+    diag.ok = false;
+    diag.error = String((e && e.message) || e);
+    diag.name = e && e.name;
+    diag.stack = e && e.stack;
   }
-
-  return res.status(405).json({ error: 'Method Not Allowed' });
+  res.status(200).json(diag);
 }
