@@ -1,6 +1,11 @@
 {
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "rewrites": [
-    { "source": "/", "destination": "/login.html" }
+  "builds": [
+    { "src": "backend/*.js", "use": "@vercel/node" },
+    { "src": "frontend/**", "use": "@vercel/static" }
+  ],
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/backend/$1" },
+    { "src": "/", "dest": "/frontend/login.html" },
+    { "src": "/(.*)", "dest": "/frontend/$1" }
   ]
 }
