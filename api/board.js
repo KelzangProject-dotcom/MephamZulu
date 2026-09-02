@@ -1,22 +1,34 @@
-// TEMPORARY DIAGNOSTIC - restore real handler after debugging
+import { getClient } from './_shared.js';
+
+async function ensureTable(client) {
+  await client.execute(`
+    CREATE TABLE IF NOT EXISTS board_state (
+      id INTEGER PRIMARY KEY CHECK (id = 1),
+      data TEXT NOT NULL
+    )
+  `);
+}
+
 export default async function handler(req, res) {
-  const report = (name) => {
-    const v = process.env[name];
-    return {
-      inKeys: Object.prototype.hasOwnProperty.call(process.env, name),
-      type: typeof v,
-      length: typeof v === 'string' ? v.length : null,
-      blank: typeof v === 'string' ? v.trim() === '' : null
-    };
-  };
-  res.status(200).json({
-    vercelEnv: process.env.VERCEL_ENV || null,
-    vercelUrl: process.env.VERCEL_URL || null,
-    deploymentId: process.env.VERCEL_DEPLOYMENT_ID || null,
-    gitSha: process.env.VERCEL_GIT_COMMIT_SHA || null,
-    TURSO_DATABASE_URL: report('TURSO_DATABASE_URL'),
-    TURSO_AUTH_TOKEN: report('TURSO_AUTH_TOKEN'),
-    USER_PASSWORD: report('USER_PASSWORD'),
-    ADMIN_PASSWORD: report('ADMIN_PASSWORD')
-  });
+  const client = getClient();
+  await ensureTable(client);
+
+  if (req.method === 'GET') {
+    const result = await client.execute('SELECT data FROM board_state WHERE id = 1');
+    const data = result.rows.length ? result.rows[0].data : '{}';
+    return res.status(200).json(JSON.parse(data));
+  }
+
+  if (req.method === 'POST') {
+    const data = req.body == null
+      ? '{}'
+      : (typeof req.body === 'string' ? req.body : JSON.stringify(req.body));
+    await client.execute({
+      sql: 'INSERT INTO board_state (id, data) VALUES (1, ?) ON CONFLICT(id) DO UPDATE SET data = excluded.data',
+      args: [data]
+    });
+    return res.status(200).json({ ok: true });
+  }
+
+  return res.status(405).json({ error: 'Method Not Allowed' });
 }
