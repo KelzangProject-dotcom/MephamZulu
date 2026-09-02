@@ -1,7 +1,3 @@
-functions/
-netlify/
-netlify.toml
-_redirects
 .env
 .env.example
 node_modules/
