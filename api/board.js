@@ -1,28 +1,22 @@
 // TEMPORARY DIAGNOSTIC - restore real handler after debugging
-import { createClient } from '@libsql/client/web';
-
 export default async function handler(req, res) {
-  const out = { scheme: (process.env.TURSO_DATABASE_URL || '').split(':')[0] || null };
-  try {
-    const client = createClient({
-      url: process.env.TURSO_DATABASE_URL,
-      authToken: process.env.TURSO_AUTH_TOKEN
-    });
-    await client.execute(`
-      CREATE TABLE IF NOT EXISTS board_state (
-        id INTEGER PRIMARY KEY CHECK (id = 1),
-        data TEXT NOT NULL
-      )
-    `);
-    const r = await client.execute('SELECT data FROM board_state WHERE id = 1');
-    out.ok = true;
-    out.rowCount = r.rows.length;
-    out.data = r.rows.length ? r.rows[0].data : '{}';
-  } catch (e) {
-    out.ok = false;
-    out.error = String((e && e.message) || e);
-    out.name = e && e.name;
-    out.code = e && e.code;
-  }
-  res.status(200).json(out);
+  const report = (name) => {
+    const v = process.env[name];
+    return {
+      inKeys: Object.prototype.hasOwnProperty.call(process.env, name),
+      type: typeof v,
+      length: typeof v === 'string' ? v.length : null,
+      blank: typeof v === 'string' ? v.trim() === '' : null
+    };
+  };
+  res.status(200).json({
+    vercelEnv: process.env.VERCEL_ENV || null,
+    vercelUrl: process.env.VERCEL_URL || null,
+    deploymentId: process.env.VERCEL_DEPLOYMENT_ID || null,
+    gitSha: process.env.VERCEL_GIT_COMMIT_SHA || null,
+    TURSO_DATABASE_URL: report('TURSO_DATABASE_URL'),
+    TURSO_AUTH_TOKEN: report('TURSO_AUTH_TOKEN'),
+    USER_PASSWORD: report('USER_PASSWORD'),
+    ADMIN_PASSWORD: report('ADMIN_PASSWORD')
+  });
 }
